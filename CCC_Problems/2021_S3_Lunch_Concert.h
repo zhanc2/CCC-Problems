@@ -8,13 +8,19 @@
 
 #include <iostream>
 #include <vector>
+typedef long long ll;
 
 using namespace std;
 
-long long lunch_concert_get_time(int pos, int num, vector<int>& positions, vector<int>& speeds, vector<int>& hearings) {
-    long long sum = 0;
+ll lunch_concert_get_time(ll concertLocation, int num, vector<ll>& positions, vector<ll>& speeds, vector<ll>& hearings) {
+    ll sum = 0;
     for (int i = 0; i < num; i++) {
-        sum += ((long long)abs(positions[i] - pos) - hearings[i]) * speeds[i];
+        ll left = concertLocation - hearings[i];
+        ll right = concertLocation + hearings[i];
+        if (left < positions[i] && positions[i] < right) {
+            continue;
+        }
+        sum += min(abs(positions[i] - left), abs(positions[i] - right)) * speeds[i];
     }
     return sum;
 }
@@ -22,49 +28,34 @@ long long lunch_concert_get_time(int pos, int num, vector<int>& positions, vecto
 void lunchConcert() {
     int n;
     cin >> n;
-    vector<int> pos(n);
-    vector<int> speed(n);
-    vector<int> hearing(n);
+    vector<ll> pos(n);
+    vector<ll> speed(n);
+    vector<ll> hearing(n);
+    ll leftBoundary = 1000000000;
+    ll rightBoundary = 0;
     for (int i = 0; i < n; i++) {
         cin >> pos[i] >> speed[i] >> hearing[i];
+        leftBoundary = min(pos[i], leftBoundary);
+        rightBoundary = max(pos[i], rightBoundary);
     }
 
-    long long boundary_1 = 0;
-    long long boundary_2;
+    ll time;
 
-    if (n > 2000) {
-        boundary_2 = 2000;
-    }
-    else {
-        boundary_2 = 1000000000;
-    }
+    ll middle;
 
-    int count = 0;
-
-    long long time;
-
-    int middle;
-
-    long long previous;
-
-    while (true) {
-        middle = (boundary_2 - boundary_1) / 2;
+    while (leftBoundary <= rightBoundary) {
+        middle = (rightBoundary + leftBoundary) / 2;
         time = lunch_concert_get_time(middle, n, pos, speed, hearing);
 
-        if (count != 0) {
-            if (time < previous) {
-
-            }
-        }
-        else {
-            previous = time;
-        }
-
-        count++;
-        if (count > 100) {
+        if (lunch_concert_get_time(middle - 1, n, pos, speed, hearing) < time) {
+            rightBoundary = middle - 1;
+        } else if (lunch_concert_get_time(middle + 1, n, pos, speed, hearing) < time) {
+            leftBoundary = middle + 1;
+        } else {
             break;
         }
     }
+    cout << time;
 }
 
 #endif //CONTEST_PROBLEMS_2021_S3_LUNCH_CONCERT_H
